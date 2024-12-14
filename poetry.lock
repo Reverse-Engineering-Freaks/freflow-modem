@@ -237,17 +237,6 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=8.3.2)", "pytest-
 type = ["mypy (>=1.11.2)"]
 
 [[package]]
-name = "python-hackrf"
-version = "1.2.4"
-description = "This is a wrapper for hackrf. It includes both libhackrf and hackrf-tools"
-optional = false
-python-versions = ">=3.9"
-files = [
-    {file = "python_hackrf-1.2.4-cp311-cp311-macosx_14_0_arm64.whl", hash = "sha256:ad824c7e794d44b8fe55a6572ebab8babac5b65d3f6ef0808970a461fbfe3a35"},
-    {file = "python_hackrf-1.2.4.tar.gz", hash = "sha256:ff2d3c68848bd1db04fe8b324d71b0c4fca1a327ca65f512a7f791864c3c1c5d"},
-]
-
-[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -275,4 +264,4 @@ tests = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "535785b2eeda34a43af6931e1131659c8ee09d679232f9aabf5258fca379a708"
+content-hash = "c61b4440dd146862447218efe01fd1dbb6bcc06d61ce712b9ecb0bf08b605ed7"

@@ -1,8 +1,6 @@
 from gnuradio import gr, blocks, digital
 import numpy as np
-from python_hackrf import pyhackrf
 from SoapySDR import SOAPY_SDR_TX, SOAPY_SDR_CF32, Device
-from time import sleep
 
 
 class Transmitter:
@@ -63,14 +61,11 @@ class Transmitter:
             data (bytes): Data
         """
 
-        # data *= 2
-
         data_bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
         self.src.set_data(data_bits.tolist())
         self.sink.reset()
         self.tb.run()
         modulated = np.array(self.sink.data(), dtype=np.complex64)
-        # modulated = np.pad(modulated, (0, self.mtu * 4))
 
         sent = 0
         while sent < len(modulated):
@@ -88,7 +83,5 @@ class Transmitter:
 
     def close(self) -> None:
         """Close"""
-        # self.sdr.pyhackrf_close()
-        # sleep(2)
         self.sdr.deactivateStream(self.tx_stream)
         self.sdr.closeStream(self.tx_stream)

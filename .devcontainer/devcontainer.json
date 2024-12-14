@@ -7,7 +7,7 @@
   "remoteUser": "root",
   "mounts": [
     "source=${localWorkspaceFolder},target=/root/workspace/,type=bind,consistency=cached",
-    "source=${env:HOME}/.ssh/config,target=/home/python/.ssh/config,type=bind,consistency=cached,readonly",
+    "source=${env:HOME}/.ssh/config,target=/root/.ssh/config,type=bind,consistency=cached,readonly",
     "source=/dev/bus/usb/,target=/dev/bus/usb/,type=bind",
     "source=/run/udev/,target=/run/udev/,type=bind,consistency=readonly"
   ],
