@@ -61,7 +61,7 @@ class GenericMessage(MessageBase):
 
     @classmethod
     def from_bytes(cls, data: bytes) -> Self:
-        """Read
+        """From bytes
 
         Args:
             data (bytes): Data Bytes
@@ -81,5 +81,5 @@ class GenericMessage(MessageBase):
     def _optional_data_buffer(self) -> bytes:
         return self.variable_data
 
-class CommandA001Message:
+class CommandA001Message(MessageBase):
     pass
