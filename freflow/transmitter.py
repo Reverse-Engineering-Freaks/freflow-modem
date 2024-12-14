@@ -40,7 +40,7 @@ class Transmitter:
             samples_per_symbol=self.samples_per_symbol,
             bt=self.bt,
             verbose=False,
-            do_unpack=False,
+            do_unpack=True,
         )
 
         self.sink = blocks.vector_sink_c()
@@ -52,17 +52,18 @@ class Transmitter:
         self.buffer_wait = self.mtu / tx_sampling_rate
 
         self.sdr.activateStream(self.tx_stream)
-        # sleep(1)
 
     def transmit(self, data: bytes) -> int:
         """Transmit data
 
         Args:
             data (bytes): Data
+
+        Returns:
+            int: Sent data length
         """
 
-        data_bits = np.unpackbits(np.frombuffer(data, dtype=np.uint8))
-        self.src.set_data(data_bits.tolist())
+        self.src.set_data(bytearray(data))
         self.sink.reset()
         self.tb.run()
         modulated = np.array(self.sink.data(), dtype=np.complex64)
