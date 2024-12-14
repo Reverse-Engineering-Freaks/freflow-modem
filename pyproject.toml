@@ -17,6 +17,7 @@ freflow-modem = "freflow-modem.cli:main"
 python = "^3.11"
 fire = "^0.6.0"
 fastcrc = "^0.3.2"
+python-hackrf = "^1.2.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.4.2"
