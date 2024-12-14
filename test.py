@@ -25,7 +25,7 @@ for i in range(100):
         payload[16] = 100 if i % 3 == 2 else 0
         print(payload[14], payload[15], payload[16])
 
-        packet = EzRadioPacket(bytes(payload), 3)
+        packet = EzRadioPacket(bytes(payload), 8)
         data += packet.to_bytes()
 
     tx.transmit(data)
