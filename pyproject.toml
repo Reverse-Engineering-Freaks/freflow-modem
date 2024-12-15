@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "freflow-modem"
 version = "0.1.0"
-description = "FreFlow Modem"
+description = "Modem for FreFlow glow stick"
 authors = ["solti48 <soltia48@protonmail.com>"]
 license = "MIT"
 # readme = "README.md"
