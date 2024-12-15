@@ -1,11 +1,15 @@
 from gnuradio import gr, blocks, digital
+from logging import getLogger
 import numpy as np
 from SoapySDR import SOAPY_SDR_TX, SOAPY_SDR_CF32, Device
+from time import sleep
 
 
 class Transmitter:
     __SYMBOLS_PER_SECOND = 80000
     __MSK_BT = 0.5
+
+    __CLOSE_WAIT_SEC = 3
 
     def __init__(
         self,
@@ -18,10 +22,16 @@ class Transmitter:
 
         Args:
             tx_device (str): TX Device
-            tx_frequency (float): TX Frequency
-            tx_sampling_rate (int): TX Sampling Rate
-            tx_gain (int): TX Gain
+            tx_frequency (int | float): TX Frequency
+            tx_sampling_rate (int | float): TX Sampling Rate
+            tx_gain (int | float): TX Gain
         """
+
+        self.__logger = getLogger(__name__)
+
+        self.__logger.info("Opening Transmitter.")
+
+        self.closing = False
 
         self.tx_sampling_rate = tx_sampling_rate
 
@@ -49,9 +59,11 @@ class Transmitter:
 
         self.tx_stream = self.sdr.setupStream(SOAPY_SDR_TX, SOAPY_SDR_CF32)
         self.mtu = self.sdr.getStreamMTU(self.tx_stream)
-        self.buffer_wait = self.mtu / tx_sampling_rate
+        self.buffer_wait = self.mtu / tx_sampling_rate * 0.9
 
         self.sdr.activateStream(self.tx_stream)
+
+        self.__logger.info("Transmitter opened.")
 
     def transmit(self, data: bytes) -> int:
         """Transmit data
@@ -77,12 +89,30 @@ class Transmitter:
                 self.tx_stream, [chunk], chunk.size, timeoutUs=1000000
             )
             if status.ret != chunk.size:
-                print(f"Warning: Only {status.ret} of {len(chunk)} samples sent")
+                self.__logger.warning(f"Only {status.ret} of {len(chunk)} samples sent")
                 return -1
             sent += status.ret
+            sleep(self.buffer_wait)
+        self.__logger.debug(f"Sent {sent} of {len(modulated)} samples")
         return sent
 
-    def close(self) -> None:
-        """Close"""
+    def close(self) -> bool:
+        """Close
+
+        Returns:
+            bool: True if this instance is closed, otherwise False
+        """
+
+        if self.closing:
+            self.__logger.info("Already started closing Transmitter.")
+            return False
+
+        self.__logger.info(
+            f"Closing Transmitter. Wait for {self.__CLOSE_WAIT_SEC} seconds."
+        )
+        self.closing = True
+        sleep(self.__CLOSE_WAIT_SEC)
         self.sdr.deactivateStream(self.tx_stream)
         self.sdr.closeStream(self.tx_stream)
+        self.__logger.info("Transmitter closed.")
+        return True

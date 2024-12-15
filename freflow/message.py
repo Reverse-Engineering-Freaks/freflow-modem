@@ -6,10 +6,12 @@ from typing import Self
 
 class Instruction(Enum):
     UNDEFINED = 0x0000
-    COMMAND_A000 = 0xA000
-    COMMAND_A001 = 0xA001
-    COMMAND_A002 = 0xA002
-    COMMAND_A010 = 0xA010
+    # Controls
+    LIGHTNING_CONTROL = 0xA000
+    LIGHTNING_CONTROL_2 = 0xA001
+    SIGNAL_TEST = 0xA002
+    SET_COLOR_TABLE = 0xA010
+    # Settings
     COMMAND_A999 = 0xA999
     COMMAND_E002 = 0xE002
     COMMAND_E003 = 0xE003
@@ -53,12 +55,14 @@ class MessageBase(ABC):
             bytes: This instance as bytes
         """
 
-        data = self.LENGTH
+        data = self.LENGTH.to_bytes(2, "little")
         data += self.system_id.to_bytes(2, "little")
         data += self.unknown_0.to_bytes(2, "little")
         data += self.channel.to_bytes(2, "little")
         data += self._instruction().value.to_bytes(2, "little")
         data += self._variable_data_buffer()
+        if len(data) < self.LENGTH:
+            data += b"\x00" * (self.LENGTH - len(data))
         return data
 
 
@@ -66,6 +70,7 @@ class MessageBase(ABC):
 class GenericMessage(MessageBase):
     """Generic Message"""
 
+    instruction: Instruction
     variable_data: bytes
 
     @classmethod
@@ -82,12 +87,11 @@ class GenericMessage(MessageBase):
         system_id = int.from_bytes(data[0:2], "little")
         unknown_0 = int.from_bytes(data[2:4], "little")
         channal = int.from_bytes(data[4:6], "little")
-        instruction_int = int.from_bytes(data[6:8], "little")
-        instruction = Instruction(instruction_int)
+        instruction = Instruction(int.from_bytes(data[6:8], "little"))
         return cls(system_id, unknown_0, channal, instruction)
 
-    def _instruction() -> Instruction:
-        return Instruction.UNDEFINED
+    def _instruction(self) -> Instruction:
+        return self.instruction
 
     def _variable_data_buffer(self) -> bytes:
         return self.variable_data
@@ -98,6 +102,25 @@ class Color:
     red: int
     green: int
     blue: int
+
+    @classmethod
+    def from_normal_rgb(cls, red: int, green: int, blue: int) -> Self:
+        """From normal RGB
+
+        Args:
+            red (int): Red (0-255)
+            green (int): Green (0-255)
+            blue (int): Blue (0-255)
+
+        Returns:
+            Self: Color instance
+        """
+
+        return cls(
+            round(red / 255 * 100),
+            round(green / 255 * 100),
+            round(blue / 255 * 100),
+        )
 
     def to_bytes(self) -> bytes:
         """To Bytes
@@ -175,7 +198,27 @@ class LightningControl:
             brightness,
         )
 
+    def to_bytes(self) -> bytes:
+        """To Bytes
 
+        Returns:
+            bytes: This instance as bytes
+        """
+
+        data = self.sequence_number.to_bytes(2, "little")
+        flag = self.control_mode.value
+        flag |= self.animation_mode.value << 2
+        flag |= (1 if self.rf_controlled else 0) << 4
+        data += flag.to_bytes()
+        data += self.random_mode_sequence_number.to_bytes()
+        data += self.color.to_bytes()
+        data += self.animation_on_time.to_bytes()
+        data += self.animation_off_time.to_bytes()
+        data += self.brightness.to_bytes()
+        return data
+
+
+@dataclass
 class LightningControlMessage(MessageBase):
     controls: list[LightningControl]
 
@@ -193,66 +236,43 @@ class LightningControlMessage(MessageBase):
         generic = GenericMessage.from_bytes(data)
 
         controls: list[LightningControl] = []
-        for i in range(6):
+        for i in range(5):
             offset = i * 10
-
-            sequence_number = int.from_bytes(
-                generic.variable_data[offset : offset + 2], "little"
-            )
-            flags = generic.variable_data[offset + 2]
-            control_mode = ControlMode(flags & 0x03)
-            animation_mode = AnimationMode(flags >> 2 & 0x03)
-            rf_controlled = True if flags >> 4 & 0x03 != 0x00 else False
-            random_mode_sequence_number = generic.variable_data[offset + 3]
-            color = Color(
-                generic.variable_data[offset + 4],
-                generic.variable_data[offset + 5],
-                generic.variable_data[offset + 6],
-            )
-            animation_on_time = generic.variable_data[offset + 7]
-            animation_off_time = generic.variable_data[offset + 8]
-            brightness = generic.variable_data[offset + 9]
-
             controls.append(
-                LightningControl(
-                    sequence_number,
-                    control_mode,
-                    animation_mode,
-                    rf_controlled,
-                    random_mode_sequence_number,
-                    color,
-                    animation_on_time,
-                    animation_off_time,
-                    brightness,
-                )
+                LightningControl.from_bytes(generic.variable_data[offset : offset + 10])
             )
 
         return cls(
             generic.system_id,
             generic.unknown_0,
             generic.channel,
-            generic.instruction,
             controls,
         )
 
-    def _instruction() -> Instruction:
-        return Instruction.COMMAND_A000
+    def _instruction(self) -> Instruction:
+        return Instruction.LIGHTNING_CONTROL
 
     def _variable_data_buffer(self) -> bytes:
         data = b""
         for control in self.controls:
-            data = control.sequence_number.to_bytes(2, "little")
-            flag = control.control_mode.value
-            flag |= control.animation_mode.value << 2
-            flag |= 1 if control.rf_controlled else 0 << 4
-            data += flag.to_bytes()
-            data += control.random_mode_sequence_number.to_bytes()
-            data += control.color.to_bytes()
-            data += control.animation_on_time.to_bytes()
-            data += control.animation_off_time.to_bytes()
-            data += control.brightness.to_bytes()
+            data += control.to_bytes()
         return data
 
 
+@dataclass
 class LightningControlMessage2(LightningControlMessage):
-    pass
+    def _instruction(self) -> Instruction:
+        return Instruction.LIGHTNING_CONTROL_2
+
+
+@dataclass
+class SignalErrorTestMessage(MessageBase):
+    sequence_number: int
+
+    def _instruction(self) -> Instruction:
+        return Instruction.SIGNAL_TEST
+
+    def _variable_data_buffer(self) -> bytes:
+        data = b"\x00\x00"
+        data += self.sequence_number.to_bytes()
+        return data
