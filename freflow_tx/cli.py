@@ -100,7 +100,7 @@ class Cli:
         signal.signal(signal.SIGINT, signal_handler)
 
     def light(self, red, green, blue, system_id=0xFFFF, channel=0xFF) -> None:
-        """_summary_
+        """Light
 
         Args:
             red (int): Red (0-255)
@@ -109,6 +109,11 @@ class Cli:
             system_id (int, optional): System ID (0x0000-0xFFFF). Defaults to 0xFFFF.
             channel (int, optional): Channel (0x0000-0xFFFF). Defaults to 0xFF.
         """
+
+        if not isinstance(system_id, int):
+            raise ValueError("Argument `system_id` must be int.")
+        if not isinstance(channel, int):
+            raise ValueError("Argument `channel` must be int.")
 
         data = b""
         for i in range(2):
@@ -127,7 +132,7 @@ class Cli:
                 255,
             )
             message = LightningControlMessage(
-                0xFFFF, 0x0000, 0x00FF, [lightning_control]
+                system_id, 0x0000, channel, [lightning_control]
             )
             packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
             data += packet.to_bytes()
@@ -135,7 +140,9 @@ class Cli:
         self.tx.close()
 
     def light_interactive(self, system_id=0xFFFF, channel=0xFF) -> None:
-        """Light FreFlow (Interactive Mode)
+        """Light (Interactive Mode)
+
+        Transmit message by enter a comma separated RGB (0-255) and a line break.
 
         Args:
             system_id (int, optional): System ID (0x0000-0xFFFF). Defaults to 0xFFFF.
@@ -153,7 +160,7 @@ class Cli:
             raise ValueError("Argument `channel` must be int.")
 
         while True:
-            rgb = input("Enter `R,G,B` (0-255): ").split(",")
+            rgb = input("Enter comma separated RGB (0-255): ").split(",")
             if len(rgb) != 3:
                 raise ValueError("Comma separated values length must be 3.")
             red, green, blue = rgb
@@ -173,24 +180,23 @@ class Cli:
                     255,
                 )
                 message = LightningControlMessage(
-                    0xFFFF, 0x0000, 0x00FF, [lightning_control]
+                    system_id, 0x0000, channel, [lightning_control]
                 )
                 packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
                 data += packet.to_bytes()
             self.tx.transmit(data)
 
-    def sig_err_test(self, system_id=0xFFFF, channel=0xFF) -> None:
-        """Signal Error Test
+    def test_sig_err(self, system_id=0xFFFF, channel=0xFF) -> None:
+        """Test Signal Error
+
+        Green: No Error (0%)
+        Blue: Few Error (0% < error <= 5%)
+        Purple: Many Error (5% < error <= 20%)
+        Red: Too Many Error (20% < error)
 
         Args:
             system_id (int, optional): System ID (0x0000-0xFFFF). Defaults to 0xFFFF.
             channel (int, optional): Channel (0x0000-0xFFFF). Defaults to 0xFF.
-
-        Note:
-            Green: No Error (0%)
-            Blue: Few Error (0% < error <= 5%)
-            Purple: Many Error (5% < error <= 20%)
-            Red: Too Many Error (20% < error)
         """
 
         if not isinstance(system_id, int):
@@ -200,7 +206,7 @@ class Cli:
 
         data = b""
         for i in range(1, 101):
-            message = SignalErrorTestMessage(0xFFFF, 0x0000, 0x00FF, i)
+            message = SignalErrorTestMessage(system_id, 0x0000, channel, i)
             packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
             data += packet.to_bytes()
         self.tx.transmit(data)
