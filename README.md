@@ -16,6 +16,37 @@ This software sends and receives (in progress) wireless messages for the FreFlow
 
 ### freflow-tx
 
+```
+$ freflow-tx --help
+
+NAME
+    freflow-tx - FreFlow Modem CLI
+
+SYNOPSIS
+    freflow-tx --dev=DEV --sr=SR --freq=FREQ --gain=GAIN <flags>
+
+DESCRIPTION
+    FreFlow Modem CLI
+
+ARGUMENTS
+    DEV
+        TX Device
+    SR
+        TX Sampling Rate
+    FREQ
+        TX Frequency
+    GAIN
+        TX Gain (db)
+
+FLAGS
+    -p, --preamble_length=PREAMBLE_LENGTH
+        Default: 48
+        Preamble length in bytes
+    -l, --log_level=LOG_LEVEL
+        Default: 'INFO'
+        Log level. Defaults to "INFO". {CRITICAL|FATAL|ERROR|WARN|WARNING|INFO|DEBUG|NOTSET}
+```
+
 #### light
 
 Light
