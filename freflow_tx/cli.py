@@ -1,6 +1,8 @@
+from colorsys import hsv_to_rgb
 import fire
 import logging
 import signal
+from time import sleep
 
 from freflow import (
     Color,
@@ -52,7 +54,7 @@ class Cli:
         sr,
         freq,
         gain,
-        preamble_length=48,
+        preamble_length=64,
         log_level="INFO",
     ) -> None:
         """FreFlow Modem CLI
@@ -211,6 +213,48 @@ class Cli:
             data += packet.to_bytes()
         self.tx.transmit(data)
         self.tx.close()
+
+    def demo_gaming(self, system_id=0xFFFF, channel=0xFF) -> None:
+        """The `Gaming` demonstration
+
+        Args:
+            system_id (int, optional): System ID (0x0000-0xFFFF). Defaults to 0xFFFF.
+            channel (int, optional): Channel (0x0000-0xFFFF). Defaults to 0xFF.
+        """
+
+        if not isinstance(system_id, int):
+            raise ValueError("Argument `system_id` must be int.")
+        if not isinstance(channel, int):
+            raise ValueError("Argument `channel` must be int.")
+
+        i = 0
+        while True:
+            red, green, blue = hsv_to_rgb(i / 18, 1.0, 1.0)
+            red, green, blue = int(255 * red), int(255 * green), int(255 * blue)
+            color = Color.from_normal_rgb(red, green, blue)
+
+            data = b""
+            for j in range(2):
+                sequence_number = i * 2 + j
+                lightning_control = LightningControl(
+                    sequence_number,
+                    ControlMode.NORMAL,
+                    AnimationMode.NONE,
+                    False,
+                    0,
+                    color,
+                    0,
+                    0,
+                    255,
+                )
+                message = LightningControlMessage(
+                    system_id, 0x0000, channel, [lightning_control]
+                )
+                packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
+                data += packet.to_bytes()
+            self.tx.transmit(data)
+            i = (i + 1) % 18
+            sleep(0.0125)
 
 
 def main() -> None:
