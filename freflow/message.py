@@ -9,7 +9,7 @@ class Instruction(Enum):
     # Controls
     LIGHTNING_CONTROL = 0xA000
     LIGHTNING_CONTROL_2 = 0xA001
-    SIGNAL_TEST = 0xA002
+    TEST_SIGNAL_ERROR = 0xA002
     SET_COLOR_TABLE = 0xA010
     # Settings
     COMMAND_A999 = 0xA999
@@ -145,7 +145,7 @@ class ControlMode(Enum):
 class AnimationMode(Enum):
     NONE = 0x00
     BLINK = 0x01
-    FADE = 0x02
+    BLINK_ONCE = 0x02
     RESERVED = 0x03
 
 
@@ -266,11 +266,11 @@ class LightningControlMessage2(LightningControlMessage):
 
 
 @dataclass
-class SignalErrorTestMessage(MessageBase):
+class TestSignalErrorMessage(MessageBase):
     sequence_number: int
 
     def _instruction(self) -> Instruction:
-        return Instruction.SIGNAL_TEST
+        return Instruction.TEST_SIGNAL_ERROR
 
     def _variable_data_buffer(self) -> bytes:
         data = b"\x00\x00"

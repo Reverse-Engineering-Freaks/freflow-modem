@@ -5,12 +5,14 @@ import signal
 from time import sleep
 
 from freflow import (
+    MessageBase,
     Color,
     ControlMode,
     AnimationMode,
     LightningControl,
     LightningControlMessage,
-    SignalErrorTestMessage,
+    LightningControlMessage2,
+    TestSignalErrorMessage,
     EzRadioPacket,
     Transmitter,
 )
@@ -101,6 +103,18 @@ class Cli:
 
         signal.signal(signal.SIGINT, signal_handler)
 
+    def __transmit(self, message: MessageBase):
+        data = b""
+        iteration = (
+            2
+            if isinstance(message, (LightningControlMessage, LightningControlMessage2))
+            else 1
+        )
+        for _ in range(iteration):
+            packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
+            data += packet.to_bytes()
+        self.tx.transmit(data)
+
     def light(self, red, green, blue, system_id=0xFFFF, channel=0xFF) -> None:
         """Light
 
@@ -117,28 +131,24 @@ class Cli:
         if not isinstance(channel, int):
             raise ValueError("Argument `channel` must be int.")
 
-        data = b""
-        for i in range(2):
-            color = Color(
-                int(red / 255 * 100), int(green / 255 * 100), int(blue / 255 * 100)
-            )
-            lightning_control = LightningControl(
-                i,
-                ControlMode.NORMAL,
-                AnimationMode.NONE,
-                False,
-                0,
-                color,
-                0,
-                0,
-                255,
-            )
-            message = LightningControlMessage(
-                system_id, 0x0000, channel, [lightning_control]
-            )
-            packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
-            data += packet.to_bytes()
-        self.tx.transmit(data)
+        color = Color(
+            int(red / 255 * 100), int(green / 255 * 100), int(blue / 255 * 100)
+        )
+        lightning_control = LightningControl(
+            0,
+            ControlMode.NORMAL,
+            AnimationMode.NONE,
+            True,
+            0,
+            color,
+            0,
+            0,
+            255,
+        )
+        message = LightningControlMessage(
+            system_id, 0x0000, channel, [lightning_control]
+        )
+        self.__transmit(message)
         self.tx.close()
 
     def light_interactive(self, system_id=0xFFFF, channel=0xFF) -> None:
@@ -161,32 +171,30 @@ class Cli:
         if not isinstance(channel, int):
             raise ValueError("Argument `channel` must be int.")
 
+        i = 0
         while True:
             rgb = input("Enter comma separated RGB (0-255): ").split(",")
             if len(rgb) != 3:
                 raise ValueError("Comma separated values length must be 3.")
             red, green, blue = rgb
             red, green, blue = int(red), int(green), int(blue)
-            data = b""
-            for i in range(2):
-                color = Color.from_normal_rgb(red, green, blue)
-                lightning_control = LightningControl(
-                    i,
-                    ControlMode.NORMAL,
-                    AnimationMode.NONE,
-                    False,
-                    0,
-                    color,
-                    0,
-                    0,
-                    255,
-                )
-                message = LightningControlMessage(
-                    system_id, 0x0000, channel, [lightning_control]
-                )
-                packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
-                data += packet.to_bytes()
-            self.tx.transmit(data)
+            color = Color.from_normal_rgb(red, green, blue)
+            lightning_control = LightningControl(
+                i << 2,
+                ControlMode.NORMAL,
+                AnimationMode.NONE,
+                True,
+                0,
+                color,
+                0,
+                0,
+                255,
+            )
+            message = LightningControlMessage(
+                system_id, 0x0000, channel, [lightning_control]
+            )
+            self.__transmit(message)
+            i += 1
 
     def test_sig_err(self, system_id=0xFFFF, channel=0xFF) -> None:
         """Test Signal Error
@@ -208,10 +216,10 @@ class Cli:
 
         data = b""
         for i in range(1, 101):
-            message = SignalErrorTestMessage(system_id, 0x0000, channel, i)
+            message = TestSignalErrorMessage(system_id, 0x0000, channel, i)
             packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
             data += packet.to_bytes()
-        self.tx.transmit(data)
+        self.__transmit(data)
         self.tx.close()
 
     def demo_gaming(self, system_id=0xFFFF, channel=0xFF) -> None:
@@ -229,32 +237,27 @@ class Cli:
 
         i = 0
         while True:
-            red, green, blue = hsv_to_rgb(i / 18, 1.0, 1.0)
+            red, green, blue = hsv_to_rgb(i / 9, 1.0, 1.0)
             red, green, blue = int(255 * red), int(255 * green), int(255 * blue)
             color = Color.from_normal_rgb(red, green, blue)
 
-            data = b""
-            for j in range(2):
-                sequence_number = i * 2 + j
-                lightning_control = LightningControl(
-                    sequence_number,
-                    ControlMode.NORMAL,
-                    AnimationMode.NONE,
-                    False,
-                    0,
-                    color,
-                    0,
-                    0,
-                    255,
-                )
-                message = LightningControlMessage(
-                    system_id, 0x0000, channel, [lightning_control]
-                )
-                packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
-                data += packet.to_bytes()
-            self.tx.transmit(data)
-            i = (i + 1) % 18
-            sleep(0.0125)
+            lightning_control = LightningControl(
+                i << 2,
+                ControlMode.NORMAL,
+                AnimationMode.NONE,
+                True,
+                0,
+                color,
+                0,
+                0,
+                255,
+            )
+            message = LightningControlMessage(
+                system_id, 0x0000, channel, [lightning_control]
+            )
+            self.__transmit(message)
+            i = (i + 1) % 9
+            sleep(0.01)
 
 
 def main() -> None:

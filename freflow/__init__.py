@@ -1,10 +1,12 @@
 from .message import (
+    MessageBase,
     Color,
     ControlMode,
     AnimationMode,
     LightningControl,
     LightningControlMessage,
-    SignalErrorTestMessage,
+    LightningControlMessage2,
+    TestSignalErrorMessage,
 )
 
 from .ez_radio_packet import EzRadioPacket
