@@ -12,13 +12,15 @@ RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
     # For development
     sudo git ssh \
     # For run
-    gnuradio soapysdr-module-all python3-soapysdr
+    python-is-python3 gnuradio soapysdr-module-all python3-soapysdr
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 USER ubuntu
 
+ENV POETRY_VIRTUALENVS_IN_PROJECT=1
+
 # Install Poetry
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN curl -sSL https://install.python-poetry.org | python -
 
 WORKDIR /workspace/
