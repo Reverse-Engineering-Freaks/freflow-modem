@@ -165,6 +165,6 @@ NOTESe
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](https://opensource.org/license/MIT)
 
 Copyright (c) 2024 soltia48 (ソルティアよんはち)
