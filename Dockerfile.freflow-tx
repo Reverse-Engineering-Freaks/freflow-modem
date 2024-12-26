@@ -1,0 +1,33 @@
+FROM ubuntu:24.04
+
+# Install HTTP(S) tools
+RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+    --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl
+
+RUN --mount=type=cache,target=/var/lib/apt/,sharing=locked \
+    --mount=type=cache,target=/var/cache/apt/,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
+    # For run
+    python-is-python3 gnuradio soapysdr-module-all python3-soapysdr
+
+USER ubuntu
+
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | python -
+ENV PATH=/home/ubuntu/.local/bin:$PATH
+
+WORKDIR /app
+
+COPY poetry.toml pyproject.toml poetry.lock README.md /app/
+COPY freflow/ freflow/
+COPY freflow_tx/ freflow_tx/
+
+ENV POETRY_NO_INTERACTION=1
+ENV POETRY_VIRTUALENVS_IN_PROJECT=1
+ENV POETRY_VIRTUALENVS_CREATE=1
+
+RUN poetry install
+
+ENTRYPOINT [ "poetry", "run", "freflow-tx" ]
