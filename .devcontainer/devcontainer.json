@@ -3,10 +3,10 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-  "workspaceFolder": "/home/ubuntu/workspace/",
+  "workspaceFolder": "/workspace/",
   "remoteUser": "ubuntu",
   "mounts": [
-    "source=${localWorkspaceFolder},target=/home/ubuntu/workspace/,type=bind,consistency=cached",
+    "source=${localWorkspaceFolder},target=/workspace/,type=bind,consistency=cached",
     "source=/dev/bus/usb/,target=/dev/bus/usb/,type=bind",
     "source=/run/udev/,target=/run/udev/,type=bind,consistency=readonly"
   ],
