@@ -104,7 +104,7 @@ class Transmitter:
         """
 
         if self.closing:
-            self.__logger.info("Already started closing Transmitter.")
+            self.__logger.info("Already closing Transmitter.")
             return False
 
         self.__logger.info(
