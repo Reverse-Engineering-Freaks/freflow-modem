@@ -165,6 +165,6 @@ NOTESe
 
 ## License
 
-[Proprietary](./LICENSE)
+[MIT](./LICENSE)
 
 Copyright (c) 2024 soltia48 (ソルティアよんはち)
