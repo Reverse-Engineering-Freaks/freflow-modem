@@ -103,16 +103,23 @@ class Cli:
 
         signal.signal(signal.SIGINT, signal_handler)
 
-    def __transmit(self, message: MessageBase):
+    def __transmit(self, messages: MessageBase | list[MessageBase]):
+        if not isinstance(messages, list):
+            messages = [messages]
+
         data = b""
-        iteration = (
-            2
-            if isinstance(message, (LightningControlMessage, LightningControlMessage2))
-            else 1
-        )
-        for _ in range(iteration):
+        for message in messages:
             packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
-            data += packet.to_bytes()
+            iteration = (
+                2
+                if isinstance(
+                    message,
+                    (LightningControlMessage, LightningControlMessage2),
+                )
+                else 1
+            )
+            for _ in range(iteration):
+                data += packet.to_bytes()
         self.tx.transmit(data)
 
     def light(self, red, green, blue, system_id=0xFFFF, channel=0xFF) -> None:
@@ -214,12 +221,10 @@ class Cli:
         if not isinstance(channel, int):
             raise ValueError("Argument `channel` must be int.")
 
-        data = b""
+        messages: list[LightningControlMessage] = []
         for i in range(1, 101):
-            message = TestSignalErrorMessage(system_id, 0x0000, channel, i)
-            packet = EzRadioPacket(message.to_bytes(), self.preamble_length)
-            data += packet.to_bytes()
-        self.__transmit(data)
+            messages.append(TestSignalErrorMessage(system_id, 0x0000, channel, i))
+        self.__transmit(messages)
         self.tx.close()
 
     def demo_gaming(self, system_id=0xFFFF, channel=0xFF) -> None:
