@@ -20,5 +20,3 @@ USER ubuntu
 
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python -
-
-WORKDIR /workspace/
