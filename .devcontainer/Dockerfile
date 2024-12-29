@@ -18,8 +18,6 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 USER ubuntu
 
-ENV POETRY_VIRTUALENVS_IN_PROJECT=1
-
 # Install Poetry
 RUN curl -sSL https://install.python-poetry.org | python -
 
