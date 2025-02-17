@@ -8,6 +8,8 @@ This software is developed for technical research on FreFlow glow stick.
 
 This software uses devices connected to a computer to emit radio waves. It is recommended that you use it in accordance with your local laws and regulations.
 
+## [Demonstration video](https://mega.nz/file/m3AFkT7R#mFJo47eQhj8ttz7XCfJgShoSrH64WTpGl_aw5zgyFDQ)
+
 ## Summary
 
 This software sends and receives (in progress) wireless messages for the FreFlow glow stick.
@@ -156,7 +158,7 @@ NOTESe
 
 ## Authors
 
-- soltia48 (ソルティアよんはち)
+- soltia48
 
 ## Thanks
 
@@ -167,4 +169,4 @@ NOTESe
 
 [MIT](https://opensource.org/license/MIT)
 
-Copyright (c) 2024 soltia48 (ソルティアよんはち)
+Copyright (c) 2024-2025 soltia48
