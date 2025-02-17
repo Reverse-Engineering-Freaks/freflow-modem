@@ -1,5 +1,5 @@
 {
-  "name": "freflow-modem Dev Container",
+  "name": "freflow-modem",
   "build": {
     "dockerfile": "Dockerfile"
   },
