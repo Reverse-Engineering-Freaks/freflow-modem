@@ -4,7 +4,7 @@ import logging
 import signal
 from time import sleep
 
-from freflow import (
+from freflow_modem import (
     MessageBase,
     Color,
     ControlMode,

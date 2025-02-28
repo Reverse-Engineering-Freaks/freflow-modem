@@ -11,4 +11,4 @@ from .message import (
 
 from .ez_radio_packet import EzRadioPacket
 
-from freflow.transmitter import Transmitter
+from .transmitter import Transmitter

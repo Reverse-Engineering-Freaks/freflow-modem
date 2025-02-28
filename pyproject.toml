@@ -1,12 +1,14 @@
-[tool.poetry]
+[project]
 name = "freflow-modem"
 version = "0.1.0"
 description = "Modem for FreFlow glow stick"
-authors = ["solti48 <soltia48@protonmail.com>"]
+authors = [
+    { name = "soltia48", email = "soltia48@protonmail.com" }
+]
 license = "MIT"
 readme = "README.md"
 packages = [
-    {include = "freflow"},
+    {include = "freflow_modem"},
     {include = "freflow_tx"}
 ]
 
