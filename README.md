@@ -158,7 +158,7 @@ NOTESe
 
 ## Authors
 
-- soltia48
+- KIRISHIKI Yudai
 
 ## Thanks
 
@@ -169,4 +169,4 @@ NOTESe
 
 [MIT](https://opensource.org/license/MIT)
 
-Copyright (c) 2024-2025 soltia48
+Copyright (c) 2024-2025 KIRISHIKI Yudai

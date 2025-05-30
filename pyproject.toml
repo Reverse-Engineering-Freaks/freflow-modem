@@ -3,7 +3,7 @@ name = "freflow-modem"
 version = "0.1.0"
 description = "Modem for FreFlow glow stick"
 authors = [
-    { name = "soltia48", email = "soltia48@protonmail.com" }
+    { name = "KIRISHIKI Yudai", email = "yudai.kirishiki@protonmail.com" }
 ]
 license = "MIT"
 readme = "README.md"
